@@ -1,4 +1,6 @@
 import json
+import re
+
 import scrapy
 from urllib.parse import urljoin
 
@@ -1051,3 +1053,38 @@ class AudibleCoUkProductSpider(scrapy.Spider):
             item['asin'] = product_data['productID']
         if product_data.get('sku'):
             item['sku'] = product_data['sku']
+
+        authors = []
+        if audiobook_data.get('author'):
+            for author in audiobook_data.get('author', []):
+                authors.append(author['name'])
+            item['authors'] = authors
+
+        narrators = []
+        if audiobook_data.get('readBy'):
+            for narrator in audiobook_data.get('readBy', []):
+                narrators.append(narrator['name'])
+            item['narrators'] = narrators
+
+        item_duration = audiobook_data.get('duration')
+        if item_duration:
+            t_minute = re.findall(r'(\d+)M', item_duration)
+            t_hour = re.findall(r'(\d+)H', item_duration)
+            if t_hour and t_minute:
+                hour = t_hour[0]
+                minute = t_minute[0]
+                item['duration'] = f'{hour}:{minute}'
+            elif t_hour:
+                hour = t_hour[0]
+                item['duration'] = f'{hour}:00'
+            elif t_minute:
+                item['duration'] = t_minute[0]
+
+        av = re.findall(r'(\w+)$', audiobook_data['offers']['availability'])
+        if av:
+            if av[0] == 'InStock':
+                item['available'] = True
+            else:
+                item['available'] = False
+
+        yield item
