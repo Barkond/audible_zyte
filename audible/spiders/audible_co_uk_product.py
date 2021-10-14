@@ -1,6 +1,5 @@
 import json
 import re
-
 import scrapy
 from urllib.parse import urljoin
 
@@ -1014,8 +1013,7 @@ class AudibleCoUkProductSpider(scrapy.Spider):
 
     def parse(self, response):
         product_ids = RAW_PRODUCT_IDS.split(',')
-        first_5 = product_ids[:5]
-        for product_id in first_5:
+        for product_id in product_ids:
             split_id = product_id.strip()
             item_url = urljoin('https://www.audible.co.uk/pd/', split_id)
             yield scrapy.Request(url=item_url, callback=self.parse_product)
