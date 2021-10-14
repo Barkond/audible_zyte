@@ -33,3 +33,29 @@ class AudibleCoUkDiscoverySpider(scrapy.Spider):
                     r'(\d{2}-\d{2}-\d{2})'),
                 'lang': product.css('li.bc-list-item.languageLabel span::text').re_first(r'(\w*)\s*$')
             }
+            name = product.css('h3 a::text').get()
+            item_url = product.css('h3 a::attr(href)').get()
+            if name and item_url:
+                item['name'] = name.strip()
+                item['url'] = urljoin(response.url, item_url)
+
+            if product.css('li.bc-list-item.ratingsLabel span.bc-text.bc-pub-offscreen'):
+                item['avg_review_score'] = float(product.css(
+                    'li.bc-list-item.ratingsLabel span.bc-text.bc-pub-offscreen::text').re_first(r'^(\d\.\d|\d)', '0'))
+            item_reviews_count = product.css(
+                'li.bc-list-item.ratingsLabel span.bc-text.bc-size-small::text').re_first(r'(\d+\,\d+|\d)', '0')
+            if item_reviews_count:
+                item_reviews_count = item_reviews_count.replace(',', '')
+                item['no_reviews'] = int(item_reviews_count)
+
+            if product.css('li.bc-list-item.subtitle'):
+                subtitle = product.css('li.bc-list-item.subtitle span::text').get()
+                item['subtitle'] = subtitle.strip()
+
+            if product.css('li.bc-list-item.authorLabel'):
+                authors = []
+                for author in product.css('li.bc-list-item.authorLabel a'):
+                    author_name = author.css('::text').get()
+                    if author_name:
+                        authors.append(author_name.strip())
+                item['authors'] = authors
