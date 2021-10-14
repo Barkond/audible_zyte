@@ -1010,6 +1010,8 @@ class AudibleCoUkProductSpider(scrapy.Spider):
     name = 'audible_co_uk_product'
     # allowed_domains = ['audible.co.uk']
     start_urls = ['http://audible.co.uk/']
+    zyte_smartproxy_enabled = False
+    zyte_smartproxy_apikey = 'ca2b385de83d4668a02d499d936999be'
 
     def parse(self, response):
         product_ids = RAW_PRODUCT_IDS.split(',')
