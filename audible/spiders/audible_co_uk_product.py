@@ -1016,3 +1016,14 @@ class AudibleCoUkProductSpider(scrapy.Spider):
             split_id = product_id.strip()
             item_url = urljoin('https://www.audible.co.uk/pd/', split_id)
             yield scrapy.Request(url=item_url, callback=self.parse_product)
+
+    def parse_product(self, response):
+        audiobook_data, product_data = None, None
+        for script in response.xpath('//div[@id=\'bottom-0\']/script'):
+            if script.xpath("./self::*[contains(text(),'\"@type\": \"Audiobook\"')]/text()"):
+                audiobook_data = json.loads(script.xpath("./text()").get())[0]
+            elif script.xpath("./self::*[contains(text(),'\"@type\": \"Product\"')]/text()"):
+                product_data = json.loads(script.xpath("./text()").get())[0]
+        if not audiobook_data or not product_data:
+            self.logger.error(f'No script data found for {response.url}')
+            return
