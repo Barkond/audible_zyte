@@ -1,3 +1,4 @@
+import json
 import scrapy
 from urllib.parse import urljoin
 
@@ -1027,3 +1028,26 @@ class AudibleCoUkProductSpider(scrapy.Spider):
         if not audiobook_data or not product_data:
             self.logger.error(f'No script data found for {response.url}')
             return
+
+        item = {
+            "url": response.url,
+            'title_name': audiobook_data.get('name', ''),
+            'no_reviews': audiobook_data.get('aggregateRating', {}).get('ratingCount', 0)
+        }
+
+        if audiobook_data.get('publisher'):
+            item['publisher'] = audiobook_data['publisher']
+        if audiobook_data.get('inLanguage'):
+            item['lang'] = audiobook_data['inLanguage']
+        if audiobook_data.get('datePublished'):
+            item['publication_date'] = audiobook_data['datePublished']
+        if audiobook_data.get('datePublished'):
+            item['publication_date'] = audiobook_data['datePublished']
+        if audiobook_data.get('aggregateRating', {}).get('ratingValue'):
+            item['avg_review_score'] = audiobook_data['aggregateRating']['ratingValue'][:4]
+        if audiobook_data.get('offers').get('highPrice'):
+            item['buy_price'] = audiobook_data['offers']['highPrice']
+        if product_data.get('productID'):
+            item['asin'] = product_data['productID']
+        if product_data.get('sku'):
+            item['sku'] = product_data['sku']
