@@ -1,3 +1,4 @@
+import re
 import scrapy
 from urllib.parse import urljoin
 
@@ -59,3 +60,54 @@ class AudibleCoUkDiscoverySpider(scrapy.Spider):
                     if author_name:
                         authors.append(author_name.strip())
                 item['authors'] = authors
+
+            if product.css('li.bc-list-item.narratorLabel'):
+                narrators = []
+                for narrator in product.css('li.bc-list-item.narratorLabel a'):
+                    narrator_name = narrator.css('::text').get()
+                    if narrator_name:
+                        narrators.append(narrator_name.strip())
+                item['narrators'] = narrators
+
+            product_duration = product.css('li.bc-list-item.bc-list-item.runtimeLabel span::text').get()
+            if product_duration:
+                t_minute = re.findall(r'(\d+) min', product_duration)
+                t_hour = re.findall(r'(\d+) hr', product_duration)
+                if t_hour and t_minute:
+                    hour = t_hour[0]
+                    minute = t_minute[0]
+                    item['duration'] = f'{hour}:{minute}'
+                elif t_hour:
+                    hour = t_hour[0]
+                    item['duration'] = f'{hour}:00'
+                elif t_minute:
+                    item['duration'] = t_minute[0]
+
+            breadcrumps = []
+            for bc in response.css('ul.bc-list.bc-spacing-none li.bc-list-item a'):
+                bc_name = ''.join(bc.css('::text').getall())
+                bc_url = bc.css('::attr(href)').get()
+                if bc_name and bc_url:
+                    breadcrumps.append({'name': bc_name.strip(),
+                                        'url': urljoin(response.url, bc_url)})
+            last_bc = {}
+            last_bc_name = response.css('div.bc-box.bc-box-padding-none ul.bc-list li.bc-list-item span::text').get()
+            if last_bc_name:
+                last_bc['name'] = last_bc_name.strip()
+            last_bc_url = response.xpath('//link[@rel="canonical"]/@href').get()
+            if last_bc_url:
+                last_bc['url'] = w3lib.url.url_query_cleaner(last_bc_url, ('node',))  # NOQA
+            if last_bc:
+                breadcrumps.append(last_bc)
+            item['breadcrumps'] = breadcrumps
+
+            price = product.css('div.adblBuyBoxPrice > p.buybox-regular-price > span:last-child::text').re_first(
+                r'(\d+\.\d+)')
+            currency = product.css('div.adblBuyBoxPrice > p.buybox-regular-price > span:last-child::text').re_first(
+                r'^\s+(.)')
+            if price:
+                item['buy_price'] = price
+            if currency == '£':
+                item['currency'] = 'GBP'
+
+            yield item
