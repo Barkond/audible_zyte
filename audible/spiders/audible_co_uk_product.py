@@ -1008,12 +1008,12 @@ RAW_PRODUCT_IDS = """B004EVK3HG
 
 class AudibleCoUkProductSpider(scrapy.Spider):
     name = 'audible_co_uk_product'
-    # allowed_domains = ['audible.co.uk']
-    start_urls = ['http://audible.co.uk/']
+    allowed_domains = ['www.audible.co.uk']
+    start_urls = ['https://httpbin.org/ip']
     zyte_smartproxy_enabled = False
     zyte_smartproxy_apikey = 'ca2b385de83d4668a02d499d936999be'
 
-    def parse(self, response):
+    def parse(self, response):  # NOQA
         product_ids = RAW_PRODUCT_IDS.split(',')
         for product_id in product_ids:
             split_id = product_id.strip()
