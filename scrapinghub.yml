@@ -1,0 +1,6 @@
+projects:
+  default: 560551
+  prod: 560551
+
+requirements:
+  file: requirements.txt

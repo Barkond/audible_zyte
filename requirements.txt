@@ -1,0 +1,1 @@
+scrapy-zyte-smartproxy==2.1.0
