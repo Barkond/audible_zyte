@@ -111,3 +111,9 @@ class AudibleCoUkDiscoverySpider(scrapy.Spider):
                 item['currency'] = 'GBP'
 
             yield item
+
+            next_page = response.css('span.bc-button.bc-button-secondary.nextButton a::attr(href)').get()
+            if response.css('span.bc-button.bc-button-secondary.nextButton.bc-button-disabled'):
+                pass
+            else:
+                yield scrapy.Request(url=urljoin(response.url, next_page), callback=self.parse_product_list)

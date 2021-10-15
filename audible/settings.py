@@ -50,9 +50,9 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'audible.middlewares.AudibleDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   'scrapy_zyte_smartproxy.ZyteSmartProxyMiddleware': 610
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
